@@ -28,7 +28,7 @@ public class VideoList {
         String selection = MediaStore.Video.Media.DURATION + " <= ?";
 
         String[] selectionArgs = new String[]{
-                String.valueOf(TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES))};
+                String.valueOf(TimeUnit.MILLISECONDS.convert(50, TimeUnit.MINUTES))};
 
         String sortOrder = MediaStore.Video.Media.DISPLAY_NAME + " ASC";
 

@@ -7,6 +7,7 @@ import android.graphics.PixelFormat;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -20,17 +21,28 @@ import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.example.vseek.R;
+import com.example.vseek.models.Video;
+import com.example.vseek.models.VideoLabels;
+import com.example.vseek.models.VideoList;
+import com.google.gson.Gson;
 
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.zip.GZIPOutputStream;
 
 public class VideoActivity extends AppCompatActivity implements SurfaceHolder.Callback, MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener, View.OnClickListener {
 
     VideoView videoView;
     MediaPlayer mp;
-    TextView textView;
+    TextView labeltV;
     Uri uri;
+    //VideoLabels videoLabels;
+    VideoLabels videoLabels;
     private SurfaceView surfaceViewFrame;
     private SurfaceHolder holder;
+    int labelInd;
+    int duration;
     //  private ProgressBar progressBarWait;
 
     @Override
@@ -38,9 +50,27 @@ public class VideoActivity extends AppCompatActivity implements SurfaceHolder.Ca
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video);
         //videoView = findViewById(R.id.videoView);
-        textView=findViewById(R.id.temptext);
+        labeltV=findViewById(R.id.label_text);
+        labelInd=0;
         Intent intent = getIntent();
+        Gson gson = new Gson();
+        String jsonString= intent.getStringExtra("VideoLabelsObjObjectStr");
+        duration= intent.getIntExtra("duration",0);
+        System.out.println(jsonString);
+        videoLabels = gson.fromJson(jsonString,VideoLabels.class);
+
+        //video= (Video) intent.getSerializableExtra("VideoObject");
         String uristr = intent.getStringExtra("uri");
+        //String uristr = video.getUri().toString();
+        //String labelsStr = intent.getStringExtra("labelsStr");
+        //String lstr = video.getVideoLabels().getLabels().get(0);
+
+//        Gson g = new Gson();
+//
+//        videoLabels =g.fromJson(labelsStr, VideoLabels.class);
+
+        //videoLabels = video.getVideoLabels();
+
         uri = Uri.parse(uristr);
         mp = new MediaPlayer();
 
@@ -147,6 +177,50 @@ public class VideoActivity extends AppCompatActivity implements SurfaceHolder.Ca
                 }
             }
         }).start();
+
+
+        int labelTime=1000;
+        if (videoLabels!=null) {
+            labelTime = duration / videoLabels.getLabels().size();
+
+
+            Timer timer = new Timer();
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (labelInd < videoLabels.getLabels().size()) {
+//                            Toast.makeText(getApplicationContext(), "" + videoLabels.getLabels().get(labelInd), Toast.LENGTH_LONG).show();
+                                   labeltV.setText(videoLabels.getLabels().get(labelInd));
+                            }
+                        }
+                    });
+                    labelInd += 1;
+
+                    //Toast.makeText(MainActivity.this,""+i,Toast.LENGTH_SHORT).show();
+                }
+            }, 0, labelTime);
+
+        }
+//        while (labelInd<videoLabels.getLabels().size()) {
+//            try {
+//                Thread.sleep(5000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            labelInd+=1;
+//            runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    if (videoLabels != null) {
+//
+//                        Toast.makeText(getApplicationContext(), "" + videoLabels.getLabels().get(labelInd), Toast.LENGTH_LONG).show();
+//                    }
+//                }
+//            });
+//        }
     }
 
     @Override
